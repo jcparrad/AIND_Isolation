@@ -9,7 +9,8 @@ __pycache__/
 .idea/*
 # C extensions
 *.so
-
+*.zip
+*.json
 # Distribution / packaging
 .Python
 env/
