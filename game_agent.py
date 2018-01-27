@@ -586,8 +586,118 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         self.time_left = time_left
 
+        global unit_test
+        if unit_test == True:
+            debug = True
+        else:
+            debug = False
+
+        if unit_test == False:
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
         # TODO: finish this function!
-        raise NotImplementedError
+        # raise NotImplementedError
+
+        gameState = game
+        player_turn = gameState.active_player
+        best_score = float("-inf")
+        best_move = None #gameState.get_legal_moves()[0]#None
+        aux_depth = 1
+
+
+
+        if len(gameState.get_legal_moves(self)) > 0:
+            best_move = gameState.get_legal_moves(self)[0]
+        else:
+            best_move = (-1, -1)
+
+        try:
+            while True:
+                move = self.alphabeta(gameState, aux_depth)
+                if move == (-1, -1):
+                    break
+                else:
+                    best_move = move
+                aux_depth += 1
+        finally:
+            return best_move
+
+    def min_value(self, gameState, aux_depth, player_turn, alpha, beta):
+        global unit_test
+        if unit_test == True:
+            debug = True
+        else:
+            debug = False
+
+        if unit_test == False:
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+        """Return the value for a loss (+1) if the game is over, otherwise return the maximun value over  all legal child nodes"""
+
+        #aux_depth += 1
+
+        best_move = (-1, -1)
+
+
+        left_places = len(gameState.get_legal_moves())
+        if left_places <= 0 or aux_depth > self.search_depth:# end reached
+            value = self.score(gameState, player_turn)
+            return value, best_move
+
+        value =  float("inf")
+
+        for legal_move in gameState.get_legal_moves():
+            if debug: print ("\nmax_value Evaluating move %s aux_depth %s" % (str(legal_move), aux_depth))
+
+            value_aux = self.max_value(gameState.forecast_move(legal_move), aux_depth, player_turn, alpha, beta)
+            if value_aux[0]<value:
+                value, _ = value_aux
+                best_move = legal_move
+            if value <= alpha:
+                return (value, best_move)
+            beta = min(alpha, value)
+
+            #if debug: print ("max_value %s move %s" %(value,str(legal_move)))
+        return (value, best_move)
+
+    def max_value(self, gameState, aux_depth, player_turn, alpha, beta):
+        global unit_test
+        if unit_test == True:
+            debug = True
+        else:
+            debug = False
+
+        if unit_test == False:
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+        """Return the value for a loss (+1) if the game is over, otherwise return the maximun value over  all legal child nodes"""
+
+        #aux_depth += 1
+
+        best_move = (-1, -1)
+
+
+        left_places = len(gameState.get_legal_moves())
+        if left_places <= 0 or aux_depth > self.search_depth:# end reached
+            value = self.score(gameState, player_turn)
+            return value, best_move
+
+        value =  float("-inf")
+
+        for legal_move in gameState.get_legal_moves():
+            if debug: print ("\nmax_value Evaluating move %s aux_depth %s" % (str(legal_move), aux_depth))
+
+            value_aux = self.min_value(gameState.forecast_move(legal_move), aux_depth, player_turn, alpha, beta)
+            if value_aux[0]>value:
+                value, _ = value_aux
+                best_move = legal_move
+            if value >= beta:
+                return (value, best_move)
+            alpha = max(alpha, value)
+
+            #if debug: print ("max_value %s move %s" %(value,str(legal_move)))
+        return (value, best_move)
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -634,8 +744,20 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+        #raise NotImplementedError
+
+        global unit_test
+        if unit_test == True:
+            debug = True
+        else:
+            debug = False
+
+        if unit_test == False:
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+        #max_value(self, gameState, aux_depth, player_turn, alpha, beta):
+        player_turn = game.active_player
+        _, move = self.max_value(game, depth, player_turn, alpha, beta)
