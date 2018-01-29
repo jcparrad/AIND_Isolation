@@ -11,6 +11,14 @@ unit_test = True
 unit_test = False
 
 
+min_open_move_score = float("inf")
+min_improved_score = float("inf")
+min_center_distance = float("inf")
+
+max_open_move_score = float("-inf")
+max_improved_score = float("-inf")
+max_center_distance = float("-inf")
+
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
     pass
@@ -146,6 +154,21 @@ def center_score(game, player):
     #y, x = game.get_player_location(game.get_opponent(player))
     return float((h - y)**2 + (w - x)**2)
 
+def get_equal_scale(xi, xmin, xmax):
+    global unit_test
+    if unit_test == True:
+        debug = True
+    else:
+        debug = False
+    # xmin -> 0
+    # xmax -> 1
+    # xi[xmin, xmax]
+
+    delta = abs(xmax - xmin)
+    x = (xi - xmin) / delta
+    return x
+
+
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -172,30 +195,55 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
 
+    if game.is_loser(player):
+        return float("-inf")
+    if game.is_winner(player):
+        return float("inf")
+
     global unit_test
     if unit_test == True:
         debug = True
     else:
         debug = False
 
-    # TODO: finish this function!
-    # if game.is_loser(player):
-    #     return float("-inf")
-    # if game.is_winner(player):
-    #     return float("inf")
-
-
+    min_open_move_score = 0.0
+    min_improved_score  = -7.0
+    min_center_distance = 0.5
+    max_open_move_score = 7.0
+    max_improved_score = 7.0
+    max_center_distance = 40.5
 
     _open_move_score = open_move_score(game, player)
     _improved_score = improved_score(game, player)
     _center_distance = center_score(game, player)
 
-    #return max(open_move_score*0.2, improved_score*0.4, center_distance*0.4)
-    # if debug: print("_open_move_score %s" % _open_move_score)
-    # if debug: print("_improved_score %s" % _improved_score)
-    # if debug: print("_center_distance %s" % _center_distance)
-    # if debug: print("_open_move_score + _improved_score + _center_distance %s" % (_open_move_score + _improved_score + _center_distance ))
-    return (_open_move_score + _improved_score + _center_distance )
+    if _open_move_score < 0:
+        _open_move_score
+    elif _open_move_score > 7:
+        _open_move_score = 7
+
+    if _improved_score < -7:
+        _improved_score = -7
+    elif _improved_score > 7:
+        _improved_score = 7
+
+    if _center_distance < 0.5:
+        _center_distance = 0.5
+    elif _center_distance > 40.5:
+        _center_distance = 40.5
+
+    _open_move_score = get_equal_scale(_open_move_score, min_open_move_score, max_open_move_score)
+    _improved_score = get_equal_scale(_improved_score, min_improved_score, max_improved_score)
+    _center_distance = get_equal_scale(_center_distance, min_center_distance, max_center_distance)
+
+
+
+
+    #score = (_open_move_score + _improved_score + _center_distance )
+    #score = ((_open_move_score) ** 2 + (_improved_score) ** 2 + (_center_distance) ** 2) ** (0.5)
+    score = ((_open_move_score) ** 2 + (_improved_score) ** 2 + (_center_distance * 0.5) ** 2) ** (0.5)
+
+    return score
 
 
 
@@ -227,8 +275,6 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    # TODO: finish this function!
     if game.is_loser(player):
         return float("-inf")
     if game.is_winner(player):
@@ -240,16 +286,41 @@ def custom_score_2(game, player):
     else:
         debug = False
 
+    min_open_move_score = 0.0
+    min_improved_score = -7.0
+    min_center_distance = 0.5
+    max_open_move_score = 7.0
+    max_improved_score = 7.0
+    max_center_distance = 40.5
+
     _open_move_score = open_move_score(game, player)
-    #if debug: print("open_move_score %s" % _open_move_score)
-
     _improved_score = improved_score(game, player)
-    #if debug: print("improved_score %s" % _improved_score)
-
     _center_distance = center_score(game, player)
-    #if debug: print("center_distance %s" % _center_distance)
-    # return max(open_move_score*0.2, improved_score*0.4, center_distance*0.4)
-    return (game.utility(player) + _open_move_score*0.2 + _improved_score*0.3 + _center_distance*0.5)
+
+    if _open_move_score < 0:
+        _open_move_score
+    elif _open_move_score > 7:
+        _open_move_score = 7
+
+    if _improved_score < -7:
+        _improved_score = -7
+    elif _improved_score > 7:
+        _improved_score = 7
+
+    if _center_distance < 0.5:
+        _center_distance = 0.5
+    elif _center_distance > 40.5:
+        _center_distance = 40.5
+
+    _open_move_score = get_equal_scale(_open_move_score, min_open_move_score, max_open_move_score)
+    _improved_score = get_equal_scale(_improved_score, min_improved_score, max_improved_score)
+    _center_distance = get_equal_scale(_center_distance, min_center_distance, max_center_distance)
+
+    score = (_open_move_score + _improved_score + _center_distance )
+    # score = ((_open_move_score) ** 2 + (_improved_score) ** 2 + (_center_distance) ** 2) ** (0.5)
+    # score = ((_open_move_score) ** 2 + (_improved_score) ** 2 + (_center_distance * 0.5) ** 2) ** (0.5)
+
+    return score
 
 
 def custom_score_3(game, player):
@@ -275,27 +346,52 @@ def custom_score_3(game, player):
         The heuristic value of the current game state to the specified player.
     """
 
+    if game.is_loser(player):
+        return float("-inf")
+    if game.is_winner(player):
+        return float("inf")
+
     global unit_test
     if unit_test == True:
         debug = True
     else:
         debug = False
 
-    if game.is_loser(player):
-        return float("-inf")
-    if game.is_winner(player):
-        return float("inf")
+    min_open_move_score = 0.0
+    min_improved_score = -7.0
+    min_center_distance = 0.5
+    max_open_move_score = 7.0
+    max_improved_score = 7.0
+    max_center_distance = 40.5
 
     _open_move_score = open_move_score(game, player)
-    #if debug: print("open_move_score %s" % _open_move_score)
-
     _improved_score = improved_score(game, player)
-    #if debug: print("improved_score %s" % _improved_score)
-
     _center_distance = center_score(game, player)
-    #if debug: print("center_distance %s" % _center_distance)
-    # return max(open_move_score*0.2, improved_score*0.4, center_distance*0.4)
-    return (_open_move_score*2 + _improved_score*2 + _center_distance*3)
+
+    if _open_move_score < 0:
+        _open_move_score
+    elif _open_move_score > 7:
+        _open_move_score = 7
+
+    if _improved_score < -7:
+        _improved_score = -7
+    elif _improved_score > 7:
+        _improved_score = 7
+
+    if _center_distance < 0.5:
+        _center_distance = 0.5
+    elif _center_distance > 40.5:
+        _center_distance = 40.5
+
+    _open_move_score = get_equal_scale(_open_move_score, min_open_move_score, max_open_move_score)
+    _improved_score = get_equal_scale(_improved_score, min_improved_score, max_improved_score)
+    _center_distance = get_equal_scale(_center_distance, min_center_distance, max_center_distance)
+
+    # score = (_open_move_score + _improved_score + _center_distance )
+    score = ((_open_move_score) ** 2 + (_improved_score) ** 2 + (_center_distance) ** 2) ** (0.5)
+    #score = ((_open_move_score) ** 2 + (_improved_score) ** 2 + (_center_distance * 0.5) ** 2) ** (0.5)
+
+    return score
 
 
 class IsolationPlayer:
